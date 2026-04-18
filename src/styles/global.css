@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+:root {
+  --ww-ink: #1a1413;
+  --ww-cream: #f6efe6;
+  --ww-amber: #c08457;
+  --ww-ember: #8a4b2a;
+  --ww-smoke: #3a322f;
+}
+
+html { font-family: 'Inter', system-ui, sans-serif; background: var(--ww-cream); color: var(--ww-ink); }
+.font-display { font-family: 'Fraunces', 'Playfair Display', Georgia, serif; font-feature-settings: 'ss01', 'ss02'; }
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.75; transform: scale(0.96); }
+}
+.wick-flicker { animation: flicker 1.6s ease-in-out infinite; }
