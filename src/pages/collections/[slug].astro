@@ -1,0 +1,140 @@
+---
+import Base from '../../layouts/Base.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import { supabase } from '../../lib/supabase';
+import type { Product } from '../../lib/supabase';
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+const siteUrl = import.meta.env.PUBLIC_SITE_URL || 'https://wickedwick-ebda.vercel.app';
+
+type Collection = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+};
+
+if (!slug) return Astro.redirect('/shop');
+
+const { data: collectionRow, error: collectionErr } = await supabase
+  .from('candle_collections')
+  .select('id, slug, name, description')
+  .eq('slug', slug)
+  .maybeSingle();
+
+if (collectionErr) console.error('[collection] fetch:', collectionErr);
+if (!collectionRow) return Astro.redirect('/shop');
+
+const collection = collectionRow as Collection;
+
+const { data: linkRows, error: linkErr } = await supabase
+  .from('candle_collection_products')
+  .select('product_id, sort_order')
+  .eq('collection_id', collection.id)
+  .order('sort_order', { ascending: true, nullsFirst: false });
+
+if (linkErr) console.error('[collection] product links:', linkErr);
+
+const productIds = (linkRows ?? []).map(r => r.product_id as string);
+
+let products: Product[] = [];
+if (productIds.length > 0) {
+  const { data: productRows, error: productErr } = await supabase
+    .from('ww_products')
+    .select('*')
+    .in('id', productIds);
+  if (productErr) console.error('[collection] products:', productErr);
+
+  const order = new Map(productIds.map((id, i) => [id, i]));
+  products = ((productRows ?? []) as Product[]).sort(
+    (a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0)
+  );
+}
+
+const structuredData = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: collection.name,
+    description: collection.description ?? undefined,
+    url: `${siteUrl}/collections/${collection.slug}`,
+    hasPart: products.map(p => ({
+      '@type': 'Product',
+      name: p.name,
+      url: `${siteUrl}/shop/${p.slug}`,
+      image: p.image_url,
+      offers: {
+        '@type': 'Offer',
+        price: (p.price_pence / 100).toFixed(2),
+        priceCurrency: p.currency.toUpperCase(),
+        availability: 'https://schema.org/InStock',
+      },
+    })),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
+      { '@type': 'ListItem', position: 2, name: 'Collections', item: `${siteUrl}/collections` },
+      { '@type': 'ListItem', position: 3, name: collection.name, item: `${siteUrl}/collections/${collection.slug}` },
+    ],
+  },
+];
+---
+<Base
+  title={`${collection.name} Candle Collection | Wicked Wick Co.`}
+  description={collection.description ?? `Shop the ${collection.name} collection — hand-poured soy candles from Wicked Wick Co.`}
+  structuredData={structuredData}
+>
+  <section class="bg-[#1a1413] text-[#f6efe6]">
+    <div class="max-w-6xl mx-auto px-5 md:px-8 pt-14 md:pt-20 pb-14 md:pb-20">
+      <nav class="text-xs text-[#e5d9c5]/70 mb-6" aria-label="Breadcrumb">
+        <a href="/" class="hover:text-[#c08457]">Home</a>
+        <span class="mx-2">/</span>
+        <a href="/collections" class="hover:text-[#c08457]">Collections</a>
+        <span class="mx-2">/</span>
+        <span class="text-[#f6efe6]">{collection.name}</span>
+      </nav>
+      <p class="text-xs uppercase tracking-[0.3em] text-[#c08457] mb-3">Collection</p>
+      <h1 class="font-display text-4xl md:text-6xl tracking-tight mb-5">{collection.name}</h1>
+      {collection.description && (
+        <p class="max-w-2xl text-[#e5d9c5]/90 text-lg leading-relaxed">{collection.description}</p>
+      )}
+      <p class="mt-6 text-sm text-[#e5d9c5]/70">
+        <strong class="text-[#f6efe6]">{products.length}</strong> {products.length === 1 ? 'candle' : 'candles'} in this collection
+      </p>
+    </div>
+  </section>
+
+  <section class="max-w-6xl mx-auto px-5 md:px-8 py-14 md:py-20">
+    {products.length === 0 ? (
+      <div class="rounded-3xl bg-white/70 border border-[#e5d9c5] p-10 text-center">
+        <p class="text-[#3a322f] mb-4">No candles in this collection yet.</p>
+        <a href="/shop" class="inline-flex items-center gap-2 rounded-full bg-[#1a1413] text-[#f6efe6] px-6 py-3 text-sm font-medium hover:bg-[#8a4b2a] transition">Shop all candles →</a>
+      </div>
+    ) : (
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+        {products.map(p => <ProductCard product={p} />)}
+      </div>
+    )}
+  </section>
+
+  <section class="max-w-6xl mx-auto px-5 md:px-8 pb-24">
+    <div class="rounded-3xl bg-[#1a1413] text-[#f6efe6] p-8 md:p-12 text-center">
+      <p class="text-xs uppercase tracking-[0.3em] text-[#c08457] mb-3">The full range</p>
+      <h2 class="font-display text-3xl md:text-4xl tracking-tight mb-4">Discover every candle we make</h2>
+      <p class="text-[#e5d9c5]/90 max-w-xl mx-auto mb-7 leading-relaxed">
+        Browse all six hand-poured soy candles — small-batch, clean-burning, and ready to ship in 2 business days.
+      </p>
+      <a
+        href="/shop"
+        class="inline-flex items-center gap-2 rounded-full bg-[#c08457] text-[#1a1413] px-7 py-3 font-medium hover:bg-[#f6efe6] transition"
+      >
+        Shop all candles →
+      </a>
+    </div>
+  </section>
+</Base>

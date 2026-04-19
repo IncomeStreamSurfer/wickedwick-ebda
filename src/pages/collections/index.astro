@@ -1,0 +1,90 @@
+---
+import Base from '../../layouts/Base.astro';
+import { supabase } from '../../lib/supabase';
+
+const siteUrl = import.meta.env.PUBLIC_SITE_URL || 'https://wickedwick-ebda.vercel.app';
+
+type Collection = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+};
+
+const { data, error } = await supabase
+  .from('candle_collections')
+  .select('id, slug, name, description')
+  .order('name');
+
+if (error) console.error('[collections] list:', error);
+const collections = (data ?? []) as Collection[];
+
+const structuredData = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Candle Collections',
+    description: 'Curated collections of Wicked Wick Co. hand-poured soy candles.',
+    url: `${siteUrl}/collections`,
+    hasPart: collections.map(c => ({
+      '@type': 'CollectionPage',
+      name: c.name,
+      url: `${siteUrl}/collections/${c.slug}`,
+      description: c.description,
+    })),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
+      { '@type': 'ListItem', position: 2, name: 'Collections', item: `${siteUrl}/collections` },
+    ],
+  },
+];
+---
+<Base
+  title="Candle Collections | Wicked Wick Co."
+  description="Browse Wicked Wick Co. candle collections — curated sets of hand-poured soy candles grouped by mood, season, and scent family."
+  structuredData={structuredData}
+>
+  <section class="max-w-6xl mx-auto px-5 md:px-8 pt-12 md:pt-16 pb-10">
+    <nav class="text-xs text-[#3a322f]/70 mb-4" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-[#8a4b2a]">Home</a>
+      <span class="mx-2">/</span>
+      <span>Collections</span>
+    </nav>
+    <p class="text-xs uppercase tracking-[0.3em] text-[#8a4b2a] mb-3">Curated sets</p>
+    <h1 class="font-display text-4xl md:text-5xl tracking-tight mb-4">Candle Collections</h1>
+    <p class="max-w-2xl text-[#3a322f] text-lg leading-relaxed">
+      Hand-poured soy candles, grouped by mood and season. Pick a collection to see the candles inside, or <a href="/shop" class="underline underline-offset-4">shop the full range</a>.
+    </p>
+  </section>
+
+  <section class="max-w-6xl mx-auto px-5 md:px-8 pb-24">
+    {collections.length === 0 ? (
+      <div class="rounded-3xl bg-white/70 border border-[#e5d9c5] p-10 text-center">
+        <p class="text-[#3a322f] mb-4">No collections yet — check back soon.</p>
+        <a href="/shop" class="inline-flex items-center gap-2 rounded-full bg-[#1a1413] text-[#f6efe6] px-6 py-3 text-sm font-medium hover:bg-[#8a4b2a] transition">Shop all candles →</a>
+      </div>
+    ) : (
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+        {collections.map(c => (
+          <a
+            href={`/collections/${c.slug}`}
+            class="group block rounded-2xl bg-white/70 border border-[#e5d9c5] p-6 md:p-7 hover:shadow-xl transition-all hover:-translate-y-1"
+          >
+            <p class="text-xs uppercase tracking-[0.3em] text-[#8a4b2a] mb-3">Collection</p>
+            <h2 class="font-display text-2xl tracking-tight mb-3 group-hover:text-[#8a4b2a] transition-colors">{c.name}</h2>
+            {c.description && (
+              <p class="text-sm text-[#3a322f] leading-relaxed line-clamp-4 mb-5">{c.description}</p>
+            )}
+            <span class="inline-flex items-center gap-1 text-sm font-medium text-[#8a4b2a] underline underline-offset-4">
+              View collection →
+            </span>
+          </a>
+        ))}
+      </div>
+    )}
+  </section>
+</Base>
