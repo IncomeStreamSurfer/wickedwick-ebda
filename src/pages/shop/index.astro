@@ -1,0 +1,79 @@
+---
+import Base from '../../layouts/Base.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import { getAllProducts } from '../../lib/supabase';
+
+const siteUrl = import.meta.env.PUBLIC_SITE_URL || 'https://wickedwick-ebda.vercel.app';
+const products = await getAllProducts();
+
+const structuredData = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Shop All Candles',
+    description: 'Six hand-poured soy candles, small-batch made in our workshop.',
+    url: `${siteUrl}/shop`,
+    hasPart: products.map(p => ({
+      '@type': 'Product',
+      name: p.name,
+      url: `${siteUrl}/shop/${p.slug}`,
+      image: p.image_url,
+      offers: {
+        '@type': 'Offer',
+        price: (p.price_pence / 100).toFixed(2),
+        priceCurrency: p.currency.toUpperCase(),
+        availability: 'https://schema.org/InStock',
+      },
+    })),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
+      { '@type': 'ListItem', position: 2, name: 'Shop', item: `${siteUrl}/shop` },
+    ],
+  },
+];
+---
+<Base
+  title="Artisan Candles Online | Wicked Wick Co."
+  description="Browse all Wicked Wick Co. hand-poured soy candles. Six unique scents crafted in small batches — find your perfect candle today."
+  structuredData={structuredData}
+>
+  <section class="max-w-6xl mx-auto px-5 md:px-8 pt-12 md:pt-16 pb-10">
+    <nav class="text-xs text-[#3a322f]/70 mb-4" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-[#8a4b2a]">Home</a>
+      <span class="mx-2">/</span>
+      <span>Shop</span>
+    </nav>
+    <p class="text-xs uppercase tracking-[0.3em] text-[#8a4b2a] mb-3">The full collection</p>
+    <h1 class="font-display text-4xl md:text-5xl tracking-tight mb-4">Shop All Candles</h1>
+    <p class="max-w-2xl text-[#3a322f] text-lg leading-relaxed">
+      Every Wicked Wick Co. candle is hand-poured in small batches with 100% American-grown soy wax and clean-burning fragrance oils. Browse all six scents below — from the gift-wrapped luxury of <a href="/shop/smoky-oud" class="underline underline-offset-4">Smoky Oud</a> to the bedtime-ritual calm of <a href="/shop/lavender-honey" class="underline underline-offset-4">Lavender &amp; Honey</a>. Free shipping on orders over $50.
+    </p>
+  </section>
+
+  <section class="max-w-6xl mx-auto px-5 md:px-8 pb-24">
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-8 pb-4 border-b border-[#e5d9c5]">
+      <p class="text-sm text-[#3a322f]/80"><strong>{products.length}</strong> candles in the collection</p>
+      <div class="flex items-center gap-3 text-xs">
+        <span class="text-[#3a322f]/60">Good for:</span>
+        <span class="rounded-full border border-[#c08457]/40 px-3 py-1">Self-care</span>
+        <span class="rounded-full border border-[#c08457]/40 px-3 py-1">Gifts</span>
+        <span class="rounded-full border border-[#c08457]/40 px-3 py-1">Home ambiance</span>
+      </div>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+      {products.map(p => <ProductCard product={p} />)}
+    </div>
+
+    <div class="mt-16 rounded-3xl bg-white/70 border border-[#e5d9c5] p-8 md:p-10 text-center">
+      <h2 class="font-display text-2xl md:text-3xl tracking-tight mb-3">Can't pick just one?</h2>
+      <p class="text-[#3a322f] max-w-xl mx-auto mb-6">
+        Add any three candles to your <a href="/cart" class="underline underline-offset-4 text-[#8a4b2a]">cart</a> and shipping is on us. Every candle arrives in our signature matte-black gift box — ready to keep or give.
+      </p>
+      <a href="/about" class="inline-flex items-center gap-2 text-sm font-medium underline underline-offset-4">Meet the maker →</a>
+    </div>
+  </section>
+</Base>

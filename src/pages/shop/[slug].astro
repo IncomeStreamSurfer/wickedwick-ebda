@@ -1,0 +1,277 @@
+---
+import Base from '../../layouts/Base.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import { getAllProducts, getProductBySlug, formatPrice } from '../../lib/supabase';
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+const siteUrl = import.meta.env.PUBLIC_SITE_URL || 'https://wickedwick-ebda.vercel.app';
+const product = slug ? await getProductBySlug(slug) : null;
+
+if (!product) {
+  return Astro.redirect('/shop');
+}
+
+const pageCopy: Record<string, { primaryKeyword: string; title: string; description: string; intro: string; mood: string; ritual: string; pairs: string; related: [string, string]; h1: string; }> = {
+  'amber-vanilla': {
+    primaryKeyword: 'amber vanilla soy candle',
+    title: 'Amber Vanilla Soy Candle | Wicked Wick Co.',
+    description: 'Warm amber and rich vanilla melt together in this small-batch soy candle. 50-hour burn time. Shop Amber & Vanilla at Wicked Wick Co.',
+    h1: 'Amber & Vanilla Hand-Poured Soy Candle',
+    intro: 'Our amber vanilla soy candle is the one we reach for when autumn arrives and the hoodies come out. Bergamot brightens the opening, golden amber resin warms the middle, and Madagascar vanilla with a whisper of tonka bean settles into a finish that smells like the best bakery on the best block.',
+    mood: 'Rainy Sunday. Bookshop cafés. That first sweater-weather evening. This is the candle equivalent of a cashmere throw.',
+    ritual: 'Light thirty minutes before dinner and let the living room fill. It pairs beautifully with a pour of bourbon or a second cup of tea.',
+    pairs: 'Layer with Lavender & Honey for a calming night-in, or stack with Smoky Oud for a moody, maximalist fragrance layering moment.',
+    related: ['lavender-honey', 'smoky-oud'],
+  },
+  'coastal-breeze': {
+    primaryKeyword: 'coastal breeze scented candle',
+    title: 'Coastal Breeze Scented Candle | Wicked Wick Co.',
+    description: 'Bring the ocean indoors with Coastal Breeze — fresh sea salt and driftwood in every burn. 45-hour soy candle. Order now at Wicked Wick Co.',
+    h1: 'Coastal Breeze Hand-Poured Soy Candle',
+    intro: 'Coastal Breeze is the scented candle for people who plan their vacations around tide charts. Cool sea salt lifts off the glass, warm driftwood grounds the middle, and sun-dried linen and clean white musk finish it off. It is, to be clear, nothing like a gas-station air freshener.',
+    mood: 'The porch of a rental cottage. Salt on your skin after a swim. The exact thirty minutes before the sunset turns pink.',
+    ritual: 'Open a window, light Coastal Breeze, and do absolutely nothing for an hour. It is prescription-strength.',
+    pairs: 'Works beautifully next to Citrus Bloom in the kitchen or layered with Black Cedar in the office.',
+    related: ['citrus-bloom', 'black-cedar'],
+  },
+  'black-cedar': {
+    primaryKeyword: 'black cedar wood candle',
+    title: 'Black Cedar Wood Candle | Wicked Wick Co.',
+    description: 'Dark, earthy black cedar and smoky woods in a clean soy base. 55-hour burn time. Shop Black Cedar at Wicked Wick Co. — ships in 2 days.',
+    h1: 'Black Cedar Hand-Poured Soy Candle',
+    intro: 'Our black cedar wood candle is the most grounding candle we make. Aged black cedar and a deliberate breath of woodsmoke sit on a bed of vetiver root and soft patchouli. It is the candle to light when the weather turns and you need the room to slow down with you.',
+    mood: 'A cabin in early December. A suede jacket that smells faintly of a campfire. The exact right amount of quiet.',
+    ritual: 'Burn in the living room during that last hour before bed — reading light on, screens off.',
+    pairs: 'Pairs with Smoky Oud for a layered, dark-and-handsome fragrance wardrobe, or with Amber & Vanilla to soften the smoke.',
+    related: ['smoky-oud', 'amber-vanilla'],
+  },
+  'lavender-honey': {
+    primaryKeyword: 'lavender honey candle',
+    title: 'Lavender Honey Candle | Wicked Wick Co.',
+    description: 'Soothing lavender and sweet wildflower honey — the perfect candle for winding down. 50-hour burn. Order Lavender & Honey at Wicked Wick Co.',
+    h1: 'Lavender & Honey Hand-Poured Soy Candle',
+    intro: 'Our lavender honey candle was formulated with one goal: make bedtime better. Provençal lavender is the star, drizzled with raw wildflower honey and softened with chamomile. It is the candle that has been quietly getting five-star reviews from insomniacs.',
+    mood: 'Bath after a long day. Clean sheets. That second episode when you swear you\'ll go to bed after.',
+    ritual: 'Light ninety minutes before lights out and let the whole bedroom settle into honey-warm calm.',
+    pairs: 'Burns beautifully alongside Amber & Vanilla for a dessert-warm winter evening, or Citrus Bloom on a spring morning.',
+    related: ['amber-vanilla', 'citrus-bloom'],
+  },
+  'citrus-bloom': {
+    primaryKeyword: 'citrus scented soy candle',
+    title: 'Citrus Scented Soy Candle | Wicked Wick Co.',
+    description: 'Bright grapefruit, lemon zest, and white florals in a clean soy wax. Energize any room. Shop Citrus Bloom at Wicked Wick Co. today.',
+    h1: 'Citrus Bloom Hand-Poured Soy Candle',
+    intro: 'Citrus Bloom is our citrus scented soy candle made for focus, mornings, and the Monday you really need to show up for. Pink grapefruit and Sicilian lemon zest hit first, neroli and orange blossom round out the middle, and green tea dries down into something soft and green.',
+    mood: 'A sunny kitchen. A clean desk. The exact moment you say, "okay — fine — today is the day."',
+    ritual: 'Light first thing in the morning while the coffee brews. It\'s a mood-reset button.',
+    pairs: 'Pairs brilliantly with Lavender & Honey for an evening pivot, or with Coastal Breeze to double-down on the crisp-and-clean energy.',
+    related: ['lavender-honey', 'coastal-breeze'],
+  },
+  'smoky-oud': {
+    primaryKeyword: 'oud luxury candle gift',
+    title: 'Oud Luxury Candle Gift | Wicked Wick Co.',
+    description: 'Rich oud, smoky resins, and dark musk — our most luxurious candle. 60-hour burn. The perfect gift. Shop Smoky Oud at Wicked Wick Co.',
+    h1: 'Smoky Oud Hand-Poured Luxury Candle',
+    intro: 'Smoky Oud is our oud luxury candle gift — the one we save for anniversaries, hostess thank-yous, and the people in our lives who deserve a little more ceremony. Precious oud wood, smoky resins, pink pepper, and a drydown of dusky leather-and-musk, all poured into a weighty black-glass vessel.',
+    mood: 'A moody dinner party. A sixth-floor apartment with one good armchair. The best hotel you\'ve ever stayed in.',
+    ritual: 'Light it right before the guests arrive. Watch the room quiet down. Take the compliments.',
+    pairs: 'Layer with Black Cedar for a dramatic, woodsy evening, or with Amber & Vanilla for a warmer gift-wrapped moment.',
+    related: ['black-cedar', 'amber-vanilla'],
+  },
+};
+
+const copy = pageCopy[product.slug] ?? {
+  primaryKeyword: product.name.toLowerCase(),
+  title: `${product.name} | Wicked Wick Co.`,
+  description: product.description ?? '',
+  h1: product.name,
+  intro: product.long_description ?? product.description ?? '',
+  mood: '',
+  ritual: '',
+  pairs: '',
+  related: ['amber-vanilla', 'smoky-oud'] as [string, string],
+};
+
+const all = await getAllProducts();
+const related = copy.related
+  .map(s => all.find(p => p.slug === s))
+  .filter(Boolean) as typeof all;
+
+const structuredData = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.description,
+    image: product.image_url,
+    brand: { '@type': 'Brand', name: 'Wicked Wick Co.' },
+    offers: {
+      '@type': 'Offer',
+      url: `${siteUrl}/shop/${product.slug}`,
+      price: (product.price_pence / 100).toFixed(2),
+      priceCurrency: product.currency.toUpperCase(),
+      availability: product.in_stock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+    },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
+      { '@type': 'ListItem', position: 2, name: 'Shop', item: `${siteUrl}/shop` },
+      { '@type': 'ListItem', position: 3, name: product.name, item: `${siteUrl}/shop/${product.slug}` },
+    ],
+  },
+];
+---
+<Base title={copy.title} description={copy.description} structuredData={structuredData} ogImage={product.image_url ?? undefined} ogType="product">
+  <section class="max-w-6xl mx-auto px-5 md:px-8 pt-8 md:pt-12 pb-6">
+    <nav class="text-xs text-[#3a322f]/70 mb-4" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-[#8a4b2a]">Home</a>
+      <span class="mx-2">/</span>
+      <a href="/shop" class="hover:text-[#8a4b2a]">Shop</a>
+      <span class="mx-2">/</span>
+      <span>{product.name}</span>
+    </nav>
+  </section>
+
+  <section class="max-w-6xl mx-auto px-5 md:px-8 pb-12">
+    <div class="grid md:grid-cols-2 gap-10 md:gap-14">
+      <div class="rounded-3xl overflow-hidden bg-white/60 border border-[#e5d9c5] aspect-[4/5]">
+        {product.image_url && (
+          <img src={product.image_url} alt={product.image_alt ?? product.name} class="w-full h-full object-cover" />
+        )}
+      </div>
+      <div class="md:pt-6">
+        <p class="text-xs uppercase tracking-[0.3em] text-[#8a4b2a] mb-3">Hand-poured soy candle</p>
+        <h1 class="font-display text-4xl md:text-5xl tracking-tight leading-tight mb-4">{copy.h1}</h1>
+        <p class="text-2xl font-display text-[#8a4b2a] mb-5">{formatPrice(product.price_pence, product.currency)}</p>
+        <p class="text-[#3a322f] text-lg leading-relaxed mb-6">{product.description}</p>
+
+        <dl class="grid grid-cols-3 gap-4 text-sm mb-7 border-y border-[#e5d9c5] py-5">
+          <div>
+            <dt class="text-xs uppercase tracking-widest text-[#3a322f]/60">Burn time</dt>
+            <dd class="font-display text-lg">{product.burn_time_hours} hrs</dd>
+          </div>
+          <div>
+            <dt class="text-xs uppercase tracking-widest text-[#3a322f]/60">Size</dt>
+            <dd class="font-display text-lg">{product.size_oz} oz</dd>
+          </div>
+          <div>
+            <dt class="text-xs uppercase tracking-widest text-[#3a322f]/60">Wax</dt>
+            <dd class="font-display text-lg">100% soy</dd>
+          </div>
+        </dl>
+
+        {product.scent_notes && (
+          <div class="mb-6">
+            <p class="text-xs uppercase tracking-widest text-[#3a322f]/60 mb-2">Scent notes</p>
+            <div class="flex flex-wrap gap-2">
+              {product.scent_notes.split(',').map(n => (
+                <span class="rounded-full border border-[#c08457]/40 px-3 py-1 text-sm">{n.trim()}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <form id="add-to-cart-form" class="flex flex-wrap items-center gap-3 mb-3">
+          <div class="flex items-center rounded-full border border-[#1a1413]/30 overflow-hidden">
+            <button type="button" data-qty-step="-1" class="w-10 h-11 text-lg hover:bg-[#e5d9c5]" aria-label="Decrease quantity">−</button>
+            <input id="qty" type="number" value="1" min="1" max="10" class="w-12 h-11 text-center bg-transparent outline-none" aria-label="Quantity" />
+            <button type="button" data-qty-step="1" class="w-10 h-11 text-lg hover:bg-[#e5d9c5]" aria-label="Increase quantity">+</button>
+          </div>
+          <button type="submit" class="flex-1 min-w-[180px] rounded-full bg-[#1a1413] text-[#f6efe6] px-6 py-3 font-medium hover:bg-[#8a4b2a] transition">
+            Add to cart →
+          </button>
+        </form>
+        <p id="cart-feedback" class="text-sm text-[#8a4b2a] min-h-5"></p>
+
+        <p class="text-sm text-[#3a322f]/70 mt-2">
+          Free shipping on orders over $50. Ships in 2 business days from our workshop.
+          <a href="/shipping-returns" class="underline underline-offset-4 hover:text-[#8a4b2a]">Shipping details →</a>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="max-w-3xl mx-auto px-5 md:px-8 py-12 md:py-16">
+    <h2 class="font-display text-2xl md:text-3xl tracking-tight mb-4">The candle, in a paragraph.</h2>
+    <p class="text-[#3a322f] leading-relaxed mb-8">{copy.intro}</p>
+
+    {copy.mood && (
+      <>
+        <h2 class="font-display text-2xl md:text-3xl tracking-tight mb-4">The mood.</h2>
+        <p class="text-[#3a322f] leading-relaxed mb-8">{copy.mood}</p>
+      </>
+    )}
+
+    {copy.ritual && (
+      <>
+        <h2 class="font-display text-2xl md:text-3xl tracking-tight mb-4">How to burn it.</h2>
+        <p class="text-[#3a322f] leading-relaxed mb-8">{copy.ritual} For the longest, cleanest burn, trim the wick to ¼ inch before every light and let the wax melt edge-to-edge on the first burn — that sets your "memory pool" and avoids tunneling. We go deeper on care in our <a href="/faq" class="text-[#8a4b2a] underline underline-offset-4">candle care FAQ</a>.</p>
+      </>
+    )}
+
+    {copy.pairs && (
+      <>
+        <h2 class="font-display text-2xl md:text-3xl tracking-tight mb-4">What it pairs with.</h2>
+        <p class="text-[#3a322f] leading-relaxed mb-8">{copy.pairs}</p>
+      </>
+    )}
+
+    <h2 class="font-display text-2xl md:text-3xl tracking-tight mb-4">How we make it.</h2>
+    <p class="text-[#3a322f] leading-relaxed mb-4">Every {product.name.toLowerCase()} is hand-poured in small 24-candle batches at our studio. We start with 100% American-grown soy wax, fold in our phthalate-free fragrance oils at the correct pour temperature, set a cotton wick by hand, and then cure each candle for 7 days before it ships. That cure time is not marketing — it's what lets the scent bloom properly when you light it.</p>
+    <p class="text-[#3a322f] leading-relaxed mb-8">Read more about our process on the <a href="/about" class="text-[#8a4b2a] underline underline-offset-4">about page</a>, or browse the rest of <a href="/shop" class="text-[#8a4b2a] underline underline-offset-4">the collection</a>.</p>
+
+    <div class="rounded-2xl bg-[#1a1413] text-[#f6efe6] p-6 md:p-8">
+      <h3 class="font-display text-xl mb-2">Our 30-day burn guarantee</h3>
+      <p class="text-[#e5d9c5]/90 text-sm leading-relaxed">
+        Light it. Live with it. If it isn't right, email us within 30 days and we'll refund or replace — no questions asked. Our <a href="/shipping-returns" class="underline underline-offset-4 text-[#c08457]">returns policy</a> keeps things simple.
+      </p>
+    </div>
+  </section>
+
+  {related.length > 0 && (
+    <section class="max-w-6xl mx-auto px-5 md:px-8 pb-24">
+      <h2 class="font-display text-2xl md:text-3xl tracking-tight mb-6">You might also love</h2>
+      <div class="grid sm:grid-cols-2 gap-5 md:gap-6">
+        {related.map(r => <ProductCard product={r} />)}
+      </div>
+      <p class="text-sm text-[#3a322f]/70 mt-6 text-center">
+        Or <a href="/shop" class="underline underline-offset-4 hover:text-[#8a4b2a]">browse the full collection →</a>
+      </p>
+    </section>
+  )}
+</Base>
+
+<script is:inline define:vars={{ productId: product.id, productSlug: product.slug, productName: product.name }}>
+  (function() {
+    const form = document.getElementById('add-to-cart-form');
+    const qtyInput = document.getElementById('qty');
+    const feedback = document.getElementById('cart-feedback');
+    if (!form || !qtyInput) return;
+
+    document.querySelectorAll('[data-qty-step]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const step = parseInt(btn.getAttribute('data-qty-step') || '1', 10);
+        const cur = parseInt(qtyInput.value, 10) || 1;
+        const next = Math.max(1, Math.min(10, cur + step));
+        qtyInput.value = String(next);
+      });
+    });
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const qty = Math.max(1, Math.min(10, parseInt(qtyInput.value, 10) || 1));
+      const raw = localStorage.getItem('ww_cart');
+      const cart = raw ? JSON.parse(raw) : {};
+      cart[productId] = (cart[productId] || 0) + qty;
+      localStorage.setItem('ww_cart', JSON.stringify(cart));
+      window.dispatchEvent(new Event('ww:cart'));
+      feedback.textContent = '✓ Added ' + qty + ' × ' + productName + ' to your cart.';
+      setTimeout(() => { window.location.href = '/cart'; }, 700);
+    });
+  })();
+</script>

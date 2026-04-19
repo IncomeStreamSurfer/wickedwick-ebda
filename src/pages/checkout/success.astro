@@ -1,0 +1,43 @@
+---
+import Base from '../../layouts/Base.astro';
+const siteUrl = import.meta.env.PUBLIC_SITE_URL || 'https://wickedwick-ebda.vercel.app';
+const structuredData = [{
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
+    { '@type': 'ListItem', position: 2, name: 'Order Confirmed', item: `${siteUrl}/checkout/success` },
+  ],
+}];
+---
+<Base
+  title="Order Confirmed | Wicked Wick Co."
+  description="Your Wicked Wick Co. candle order is confirmed. Check your inbox for your order confirmation email with shipping details."
+  structuredData={structuredData}
+  noindex={true}
+>
+  <section class="max-w-2xl mx-auto px-5 md:px-8 py-20 md:py-28 text-center">
+    <div class="text-6xl mb-4 wick-flicker" aria-hidden="true">🕯️</div>
+    <p class="text-xs uppercase tracking-[0.3em] text-[#8a4b2a] mb-3">Thank you</p>
+    <h1 class="font-display text-4xl md:text-5xl tracking-tight mb-5">Your order is confirmed — thank you!</h1>
+    <p class="text-[#3a322f] text-lg leading-relaxed mb-6">
+      We got your order and we're already getting it ready. A confirmation email with your order details is on the way to your inbox — if it doesn't appear in a few minutes, check your spam folder (or <a href="/contact" class="underline underline-offset-4 text-[#8a4b2a]">reach out to us</a>).
+    </p>
+    <p class="text-[#3a322f] text-lg leading-relaxed mb-10">
+      Every candle is hand-poured, boxed, and shipped within 2 business days from our workshop. You'll get a tracking email as soon as it's on the way.
+    </p>
+    <div class="flex flex-wrap justify-center gap-3">
+      <a href="/shop" class="inline-flex items-center gap-2 rounded-full bg-[#1a1413] text-[#f6efe6] px-6 py-3 font-medium hover:bg-[#8a4b2a] transition">Keep shopping →</a>
+      <a href="/" class="inline-flex items-center gap-2 rounded-full border border-[#1a1413]/30 px-6 py-3 font-medium hover:bg-[#1a1413] hover:text-[#f6efe6] transition">Back to home</a>
+    </div>
+    <p class="text-xs text-[#3a322f]/60 mt-10">Session ID: <span id="sid" class="font-mono"></span></p>
+  </section>
+</Base>
+<script is:inline>
+  try {
+    localStorage.removeItem('ww_cart');
+    window.dispatchEvent(new Event('ww:cart'));
+    const sid = new URLSearchParams(location.search).get('session_id');
+    if (sid) document.getElementById('sid').textContent = sid.slice(0, 16) + '…';
+  } catch (e) {}
+</script>

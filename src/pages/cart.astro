@@ -1,0 +1,162 @@
+---
+import Base from '../layouts/Base.astro';
+import { getAllProducts } from '../lib/supabase';
+
+export const prerender = false;
+const products = await getAllProducts();
+const siteUrl = import.meta.env.PUBLIC_SITE_URL || 'https://wickedwick-ebda.vercel.app';
+
+const structuredData = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
+      { '@type': 'ListItem', position: 2, name: 'Cart', item: `${siteUrl}/cart` },
+    ],
+  },
+];
+---
+<Base
+  title="Your Cart | Wicked Wick Co."
+  description="Review your Wicked Wick Co. candle order, update quantities, and proceed to secure Stripe checkout. Free shipping over $50."
+  structuredData={structuredData}
+  noindex={true}
+>
+  <section class="max-w-4xl mx-auto px-5 md:px-8 pt-12 md:pt-16 pb-24">
+    <nav class="text-xs text-[#3a322f]/70 mb-4" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-[#8a4b2a]">Home</a>
+      <span class="mx-2">/</span>
+      <a href="/shop" class="hover:text-[#8a4b2a]">Shop</a>
+      <span class="mx-2">/</span>
+      <span>Cart</span>
+    </nav>
+    <h1 class="font-display text-4xl md:text-5xl tracking-tight mb-3">Your Cart</h1>
+    <p class="text-[#3a322f] mb-10 max-w-xl">Review your candles, update quantities, and head to secure Stripe checkout. Free shipping kicks in automatically over $50.</p>
+
+    <div id="cart-empty" class="hidden rounded-3xl border border-dashed border-[#e5d9c5] bg-white/60 p-10 text-center">
+      <div class="text-5xl mb-3">🕯️</div>
+      <h2 class="font-display text-2xl mb-2">Your cart is empty</h2>
+      <p class="text-[#3a322f] mb-6">Nothing to burn here yet. Head over to the shop and pick out a scent.</p>
+      <a href="/shop" class="inline-flex items-center gap-2 rounded-full bg-[#1a1413] text-[#f6efe6] px-6 py-3 font-medium hover:bg-[#8a4b2a] transition">Browse the collection →</a>
+    </div>
+
+    <div id="cart-content" class="hidden grid md:grid-cols-[1fr_320px] gap-8">
+      <div id="cart-items" class="space-y-4"></div>
+      <aside class="rounded-2xl bg-white/80 border border-[#e5d9c5] p-6 h-fit sticky top-20">
+        <h2 class="font-display text-xl mb-4">Order summary</h2>
+        <dl class="space-y-2 text-sm">
+          <div class="flex justify-between"><dt>Subtotal</dt><dd id="summary-subtotal">$0.00</dd></div>
+          <div class="flex justify-between"><dt>Shipping</dt><dd id="summary-shipping">—</dd></div>
+          <div class="flex justify-between font-display text-xl pt-3 border-t border-[#e5d9c5]"><dt>Total</dt><dd id="summary-total">$0.00</dd></div>
+        </dl>
+        <button id="checkout-btn" type="button" class="mt-5 w-full rounded-full bg-[#1a1413] text-[#f6efe6] px-6 py-3 font-medium hover:bg-[#8a4b2a] transition disabled:opacity-60">
+          Checkout with Stripe →
+        </button>
+        <p id="checkout-error" class="text-xs text-red-700 mt-2"></p>
+        <a href="/shop" class="block text-center text-sm underline underline-offset-4 mt-4 text-[#3a322f] hover:text-[#8a4b2a]">Continue shopping</a>
+        <p class="text-xs text-[#3a322f]/60 mt-4 leading-relaxed">Secure checkout powered by <strong>Stripe</strong>. You'll receive an order confirmation email from us.</p>
+      </aside>
+    </div>
+  </section>
+</Base>
+
+<script is:inline define:vars={{ products }}>
+  (function() {
+    const fmt = (pence) => '$' + (pence / 100).toFixed(2);
+    const byId = Object.fromEntries(products.map(p => [p.id, p]));
+    const itemsEl = document.getElementById('cart-items');
+    const emptyEl = document.getElementById('cart-empty');
+    const contentEl = document.getElementById('cart-content');
+    const subtotalEl = document.getElementById('summary-subtotal');
+    const shippingEl = document.getElementById('summary-shipping');
+    const totalEl = document.getElementById('summary-total');
+    const btn = document.getElementById('checkout-btn');
+    const errEl = document.getElementById('checkout-error');
+
+    function loadCart() {
+      try { return JSON.parse(localStorage.getItem('ww_cart') || '{}'); } catch { return {}; }
+    }
+    function saveCart(cart) {
+      localStorage.setItem('ww_cart', JSON.stringify(cart));
+      window.dispatchEvent(new Event('ww:cart'));
+    }
+
+    function render() {
+      const cart = loadCart();
+      const entries = Object.entries(cart).filter(([id, q]) => byId[id] && q > 0);
+      if (entries.length === 0) {
+        emptyEl.classList.remove('hidden');
+        contentEl.classList.add('hidden');
+        return;
+      }
+      emptyEl.classList.add('hidden');
+      contentEl.classList.remove('hidden');
+
+      let subtotal = 0;
+      itemsEl.innerHTML = entries.map(([id, qty]) => {
+        const p = byId[id];
+        const line = p.price_pence * qty;
+        subtotal += line;
+        return `
+          <article class="flex gap-4 rounded-2xl bg-white/80 border border-[#e5d9c5] p-4">
+            <a href="/shop/${p.slug}" class="block w-24 h-28 rounded-xl overflow-hidden bg-[#e5d9c5] shrink-0">
+              ${p.image_url ? `<img src="${p.image_url}" alt="${(p.image_alt || p.name).replace(/"/g,'&quot;')}" class="w-full h-full object-cover" />` : ''}
+            </a>
+            <div class="flex-1 min-w-0">
+              <div class="flex justify-between gap-3 items-start">
+                <div>
+                  <a href="/shop/${p.slug}" class="font-display text-lg hover:text-[#8a4b2a]">${p.name}</a>
+                  ${p.scent_notes ? `<p class="text-xs uppercase tracking-widest text-[#3a322f]/60 mt-0.5">${p.scent_notes}</p>` : ''}
+                </div>
+                <span class="font-medium whitespace-nowrap">${fmt(line)}</span>
+              </div>
+              <div class="flex items-center gap-3 mt-3">
+                <div class="flex items-center rounded-full border border-[#1a1413]/20 overflow-hidden">
+                  <button data-dec="${id}" class="w-8 h-8 hover:bg-[#e5d9c5]" aria-label="Decrease">−</button>
+                  <span class="w-8 text-center text-sm">${qty}</span>
+                  <button data-inc="${id}" class="w-8 h-8 hover:bg-[#e5d9c5]" aria-label="Increase">+</button>
+                </div>
+                <button data-remove="${id}" class="text-xs underline underline-offset-4 text-[#3a322f]/70 hover:text-[#8a4b2a]">Remove</button>
+              </div>
+            </div>
+          </article>`;
+      }).join('');
+
+      itemsEl.querySelectorAll('[data-inc]').forEach(b => b.addEventListener('click', () => {
+        const id = b.getAttribute('data-inc'); const c = loadCart(); c[id] = Math.min(10, (c[id] || 0) + 1); saveCart(c); render();
+      }));
+      itemsEl.querySelectorAll('[data-dec]').forEach(b => b.addEventListener('click', () => {
+        const id = b.getAttribute('data-dec'); const c = loadCart(); c[id] = Math.max(0, (c[id] || 0) - 1); if (c[id] === 0) delete c[id]; saveCart(c); render();
+      }));
+      itemsEl.querySelectorAll('[data-remove]').forEach(b => b.addEventListener('click', () => {
+        const id = b.getAttribute('data-remove'); const c = loadCart(); delete c[id]; saveCart(c); render();
+      }));
+
+      const shipping = subtotal >= 5000 ? 0 : (subtotal > 0 ? 600 : 0);
+      subtotalEl.textContent = fmt(subtotal);
+      shippingEl.textContent = shipping === 0 && subtotal > 0 ? 'FREE' : fmt(shipping);
+      totalEl.textContent = fmt(subtotal + shipping);
+    }
+
+    btn.addEventListener('click', async () => {
+      errEl.textContent = '';
+      btn.disabled = true; btn.textContent = 'Preparing…';
+      try {
+        const cart = loadCart();
+        const items = Object.entries(cart).map(([product_id, quantity]) => ({ product_id, quantity }));
+        const res = await fetch('/api/checkout', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ items }) });
+        const data = await res.json();
+        if (!res.ok || !data.url) throw new Error(data.error || 'Checkout failed');
+        window.location.href = data.url;
+      } catch (e) {
+        errEl.textContent = e.message || 'Checkout failed';
+        btn.disabled = false; btn.textContent = 'Checkout with Stripe →';
+      }
+    });
+
+    render();
+    window.addEventListener('ww:cart', render);
+    window.addEventListener('storage', render);
+  })();
+</script>
