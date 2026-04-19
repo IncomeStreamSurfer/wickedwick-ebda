@@ -42,6 +42,16 @@ export type ContentPost = {
   published_at: string | null;
 };
 
+// Price overrides applied at render time (source of truth stays in DB until synced).
+function applyPriceOverride(p: Product): Product {
+  if (!p) return p;
+  const haystack = `${p.slug ?? ''} ${p.name ?? ''}`.toLowerCase();
+  if (haystack.includes('amber') && haystack.includes('vanilla')) {
+    return { ...p, price_pence: 9000 };
+  }
+  return p;
+}
+
 export async function getAllProducts(): Promise<Product[]> {
   const { data, error } = await supabase
     .from('ww_products')
@@ -52,7 +62,7 @@ export async function getAllProducts(): Promise<Product[]> {
     console.error('[supabase] getAllProducts:', error);
     return [];
   }
-  return (data ?? []) as Product[];
+  return ((data ?? []) as Product[]).map(applyPriceOverride);
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
@@ -65,7 +75,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     console.error('[supabase] getProductBySlug:', error);
     return null;
   }
-  return (data as Product) ?? null;
+  return data ? applyPriceOverride(data as Product) : null;
 }
 
 export async function getFeaturedProducts(): Promise<Product[]> {
@@ -75,7 +85,7 @@ export async function getFeaturedProducts(): Promise<Product[]> {
     .eq('featured', true)
     .order('name');
   if (error) return [];
-  return (data ?? []) as Product[];
+  return ((data ?? []) as Product[]).map(applyPriceOverride);
 }
 
 export async function getPublishedPosts(): Promise<ContentPost[]> {
