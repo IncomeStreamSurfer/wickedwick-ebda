@@ -3,10 +3,13 @@ const { pathname } = Astro.url;
 const isActive = (href: string) => pathname === href || (href !== '/' && pathname.startsWith(href));
 ---
 <header class="sticky top-0 z-40 border-b border-[#e5d9c5] bg-[#f6efe6]/85 backdrop-blur">
-  <nav class="max-w-6xl mx-auto px-5 md:px-8 h-16 flex items-center justify-between">
-    <a href="/" class="flex items-center gap-2 font-display text-xl tracking-tight">
-      <span class="text-2xl wick-flicker" aria-hidden="true">🕯️</span>
-      <span>Wicked Wick Co.</span>
+  <nav class="max-w-6xl mx-auto px-5 md:px-8 h-20 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-3">
+      <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#1a1413] text-[#f6efe6] font-display text-sm tracking-widest wick-flicker" aria-hidden="true">WW</span>
+      <span class="flex flex-col leading-tight">
+        <span class="font-display text-xl tracking-tight">Wicked Wick Co.</span>
+        <span class="text-[11px] uppercase tracking-[0.2em] text-[#8a4b2a]">Hand-poured · Small batch</span>
+      </span>
     </a>
     <ul class="hidden md:flex items-center gap-8 text-sm font-medium">
       <li><a href="/shop" class={`hover:text-[#8a4b2a] ${isActive('/shop') ? 'text-[#8a4b2a]' : ''}`}>Shop</a></li>
