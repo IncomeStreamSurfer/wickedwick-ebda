@@ -1,0 +1,84 @@
+---
+import Base from '../layouts/Base.astro';
+const siteUrl = import.meta.env.PUBLIC_SITE_URL || 'https://wickedwick-ebda.vercel.app';
+const structuredData = [
+  { '@context': 'https://schema.org', '@type': 'AboutPage', name: 'About Wicked Wick Co.', url: `${siteUrl}/about` },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'Wicked Wick Co.',
+    url: siteUrl,
+    foundingDate: '2021',
+    description: 'A boutique online candle shop offering artisan, small-batch hand-poured candles.',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
+      { '@type': 'ListItem', position: 2, name: 'About', item: `${siteUrl}/about` },
+    ],
+  },
+];
+---
+<Base
+  title="About Our Candle Maker | Wicked Wick Co."
+  description="Meet the maker behind Wicked Wick Co. Learn how we hand-pour every small-batch soy candle with premium fragrance oils and real care."
+  structuredData={structuredData}
+>
+  <section class="max-w-3xl mx-auto px-5 md:px-8 pt-12 md:pt-20 pb-16">
+    <nav class="text-xs text-[#3a322f]/70 mb-4" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-[#8a4b2a]">Home</a>
+      <span class="mx-2">/</span>
+      <span>About</span>
+    </nav>
+    <p class="text-xs uppercase tracking-[0.3em] text-[#8a4b2a] mb-3">Our story</p>
+    <h1 class="font-display text-4xl md:text-5xl tracking-tight leading-tight mb-6">The story behind Wicked Wick Co.</h1>
+    <p class="text-xl text-[#3a322f] leading-relaxed mb-10">
+      We are a small-batch artisan candle maker pouring clean, concentrated soy candles out of a sunny studio. Everything we sell was made by a real human — probably this morning.
+    </p>
+
+    <div class="rounded-3xl overflow-hidden aspect-[16/9] bg-[#e5d9c5] mb-12">
+      <img src="https://images.unsplash.com/photo-1602874801007-bd458bb1b8b6?auto=format&fit=crop&w=1200&q=80" alt="Hand-poured candle at a Wicked Wick Co. workbench" class="w-full h-full object-cover" />
+    </div>
+
+    <h2 class="font-display text-2xl md:text-3xl tracking-tight mb-4">It started with a saucepan.</h2>
+    <p class="text-[#3a322f] leading-relaxed mb-6">
+      Wicked Wick Co. started the way a lot of small brands do — in a home kitchen, with one saucepan, a kitchen thermometer, and a stubborn belief that a candle should smell like <em>something</em>. Not "fresh linen." Not "mountain air." Something specific, and honest, and actually nice.
+    </p>
+    <p class="text-[#3a322f] leading-relaxed mb-10">
+      Our first batch was twelve candles. We gave eight of them away and sold four. We're four years in now, poured tens of thousands of wicks, and every single candle that leaves the studio is still hand-poured, hand-labeled, and hand-inspected before it ships.
+    </p>
+
+    <h2 class="font-display text-2xl md:text-3xl tracking-tight mb-4">What goes in our candles (and what doesn't).</h2>
+    <p class="text-[#3a322f] leading-relaxed mb-4">Three ingredients. No compromises.</p>
+    <ul class="space-y-3 mb-10 text-[#3a322f]">
+      <li class="flex gap-3"><strong class="text-[#8a4b2a] w-32 shrink-0">Soy wax</strong><span>100% American-grown, GMO-free soy. Cleaner burn, lower soot, renewable. Never paraffin, never blends.</span></li>
+      <li class="flex gap-3"><strong class="text-[#8a4b2a] w-32 shrink-0">Fragrance</strong><span>Phthalate-free fragrance oils from two partner houses — one in France, one in the US. Clean, concentrated, and CLP-compliant.</span></li>
+      <li class="flex gap-3"><strong class="text-[#8a4b2a] w-32 shrink-0">Wicks</strong><span>Organic cotton, lead-free, and hand-centered in every candle. No wire cores. No nonsense.</span></li>
+    </ul>
+
+    <h2 class="font-display text-2xl md:text-3xl tracking-tight mb-4">How a Wicked Wick candle actually gets made.</h2>
+    <ol class="space-y-4 mb-10 text-[#3a322f]">
+      <li><strong class="text-[#1a1413]">1. We weigh.</strong> Every batch is 24 candles. We weigh the soy to the gram and heat it gently to 185°F.</li>
+      <li><strong class="text-[#1a1413]">2. We blend.</strong> Fragrance is folded in at exactly 170°F — hot enough to bind, cool enough not to burn off the top notes.</li>
+      <li><strong class="text-[#1a1413]">3. We pour.</strong> Into each pre-warmed vessel, by hand, at 135°F. Temperature matters a lot.</li>
+      <li><strong class="text-[#1a1413]">4. We cure.</strong> Candles rest for 7 days before they ship. That cure time is what lets the scent throw properly when you light them.</li>
+      <li><strong class="text-[#1a1413]">5. We pack.</strong> Into a matte-black gift box with a handwritten card, and straight to the post.</li>
+    </ol>
+
+    <h2 class="font-display text-2xl md:text-3xl tracking-tight mb-4">What we believe.</h2>
+    <p class="text-[#3a322f] leading-relaxed mb-6">
+      A candle is a small thing, but the moment it makes isn't. We want every Wicked Wick candle to be the quiet center of a good evening — a <a href="/shop/lavender-honey" class="underline underline-offset-4 text-[#8a4b2a]">long bath</a>, <a href="/shop/smoky-oud" class="underline underline-offset-4 text-[#8a4b2a]">a first date</a>, or the first hour of a Saturday morning.
+    </p>
+    <p class="text-[#3a322f] leading-relaxed mb-10">
+      If that sounds right to you, we'd love to be a part of it. <a href="/shop" class="underline underline-offset-4 text-[#8a4b2a]">Browse the collection</a>, or <a href="/contact" class="underline underline-offset-4 text-[#8a4b2a]">say hi</a>. We read every email.
+    </p>
+
+    <div class="rounded-3xl bg-[#1a1413] text-[#f6efe6] p-8">
+      <h2 class="font-display text-2xl md:text-3xl tracking-tight mb-3">Have a question first?</h2>
+      <p class="text-[#e5d9c5]/90 mb-5">Our <a href="/faq" class="underline underline-offset-4 text-[#c08457]">FAQ</a> covers burn time, care, and ingredients. For anything else, our <a href="/contact" class="underline underline-offset-4 text-[#c08457]">contact form</a> goes straight to the studio.</p>
+      <a href="/shop" class="inline-flex items-center gap-2 rounded-full bg-[#c08457] text-[#1a1413] px-6 py-3 font-medium hover:bg-[#f6efe6] transition">Shop the candles →</a>
+    </div>
+  </section>
+</Base>

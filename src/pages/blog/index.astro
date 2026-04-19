@@ -1,0 +1,97 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getPublishedPosts } from '../../lib/supabase';
+
+export const prerender = false;
+const posts = await getPublishedPosts();
+const siteUrl = import.meta.env.PUBLIC_SITE_URL || 'https://wickedwick-ebda.vercel.app';
+
+const structuredData = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Blog',
+    name: 'The Wicked Wick Co. Blog',
+    url: `${siteUrl}/blog`,
+    description: 'Candle care guides, home fragrance tips, gift ideas, and behind-the-scenes stories from our workshop.',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
+      { '@type': 'ListItem', position: 2, name: 'Blog', item: `${siteUrl}/blog` },
+    ],
+  },
+];
+---
+<Base
+  title="Candle Blog | Wicked Wick Co."
+  description="Explore the Wicked Wick Co. blog for candle care guides, home fragrance tips, gift ideas, and behind-the-scenes stories from our workshop."
+  structuredData={structuredData}
+>
+  <section class="max-w-4xl mx-auto px-5 md:px-8 pt-12 md:pt-16 pb-20">
+    <nav class="text-xs text-[#3a322f]/70 mb-4" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-[#8a4b2a]">Home</a>
+      <span class="mx-2">/</span>
+      <span>Blog</span>
+    </nav>
+    <p class="text-xs uppercase tracking-[0.3em] text-[#8a4b2a] mb-3">Words from the workshop</p>
+    <h1 class="font-display text-4xl md:text-5xl tracking-tight leading-tight mb-5">Candle care, scent tips &amp; more from the Wicked Wick Blog.</h1>
+    <p class="text-lg text-[#3a322f] max-w-2xl leading-relaxed mb-12">
+      A candle tips and home fragrance blog from our studio. Expect long-form guides on candle care, soy wax science, scent pairings, gift ideas, and the occasional behind-the-scenes story. When you're done reading, come <a href="/shop" class="underline underline-offset-4 text-[#8a4b2a]">browse the collection</a> or <a href="/about" class="underline underline-offset-4 text-[#8a4b2a]">meet the maker</a>.
+    </p>
+
+    {posts.length === 0 ? (
+      <div class="rounded-3xl border border-dashed border-[#e5d9c5] bg-white/60 p-10 md:p-14 text-center">
+        <div class="text-5xl mb-4 wick-flicker">🕯️</div>
+        <h2 class="font-display text-2xl md:text-3xl tracking-tight mb-3">Fresh articles soon.</h2>
+        <p class="text-[#3a322f] max-w-lg mx-auto mb-6">
+          Our first wave of deep-dive candle care, scent pairing, and gifting guides is in the works. Sign up and we'll send you the first one the day it goes live.
+        </p>
+        <form id="newsletter" class="flex flex-wrap gap-2 justify-center max-w-sm mx-auto">
+          <input type="email" required placeholder="you@example.com" class="flex-1 min-w-[200px] rounded-full border border-[#e5d9c5] bg-white px-5 py-3 focus:outline-none focus:border-[#c08457]" />
+          <button type="submit" class="rounded-full bg-[#1a1413] text-[#f6efe6] px-5 py-3 font-medium hover:bg-[#8a4b2a] transition">Notify me</button>
+        </form>
+        <p id="nl-msg" class="text-sm mt-3"></p>
+        <p class="text-xs text-[#3a322f]/60 mt-6">
+          In the meantime, start with our <a href="/faq" class="underline underline-offset-4 text-[#8a4b2a]">Candle Care FAQ</a>.
+        </p>
+      </div>
+    ) : (
+      <div class="grid md:grid-cols-2 gap-6">
+        {posts.map(post => (
+          <a href={`/blog/${post.slug}`} class="group block rounded-2xl bg-white/70 border border-[#e5d9c5] overflow-hidden hover:shadow-xl transition hover:-translate-y-1">
+            {post.cover_image_url && (
+              <div class="aspect-[16/10] bg-[#e5d9c5] overflow-hidden">
+                <img src={post.cover_image_url} alt={post.title} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+              </div>
+            )}
+            <div class="p-6">
+              {post.tags && post.tags.length > 0 && (
+                <p class="text-xs uppercase tracking-widest text-[#8a4b2a] mb-2">{post.tags[0]}</p>
+              )}
+              <h2 class="font-display text-xl md:text-2xl tracking-tight mb-2 group-hover:text-[#8a4b2a]">{post.title}</h2>
+              {post.excerpt && <p class="text-sm text-[#3a322f] line-clamp-3">{post.excerpt}</p>}
+              <p class="text-xs text-[#3a322f]/60 mt-3">
+                {post.published_at && new Date(post.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+            </div>
+          </a>
+        ))}
+      </div>
+    )}
+  </section>
+</Base>
+<script is:inline>
+  (function() {
+    const f = document.getElementById('newsletter');
+    const m = document.getElementById('nl-msg');
+    if (!f) return;
+    f.addEventListener('submit', e => {
+      e.preventDefault();
+      m.textContent = '✓ You\'re in. We\'ll email you the moment we publish.';
+      m.className = 'text-sm mt-3 text-[#8a4b2a]';
+      f.reset();
+    });
+  })();
+</script>
