@@ -1,0 +1,24 @@
+---
+import type { Product } from '../lib/supabase';
+import { formatPrice } from '../lib/supabase';
+
+interface Props { product: Product; }
+const { product } = Astro.props;
+---
+<a href={`/shop/${product.slug}`} class="group block rounded-2xl bg-white/70 border border-[#e5d9c5] overflow-hidden hover:shadow-xl transition-all hover:-translate-y-1">
+  <div class="aspect-[4/5] bg-[#e5d9c5] overflow-hidden">
+    {product.image_url && (
+      <img src={product.image_url} alt={product.image_alt ?? product.name} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+    )}
+  </div>
+  <div class="p-5">
+    <div class="flex items-start justify-between gap-3 mb-1">
+      <h3 class="font-display text-xl tracking-tight">{product.name}</h3>
+      <span class="font-medium text-[#8a4b2a] whitespace-nowrap">{formatPrice(product.price_pence, product.currency)}</span>
+    </div>
+    {product.scent_notes && (
+      <p class="text-xs uppercase tracking-widest text-[#8a4b2a]/70 mb-2">{product.scent_notes}</p>
+    )}
+    <p class="text-sm text-[#3a322f] line-clamp-2">{product.description}</p>
+  </div>
+</a>

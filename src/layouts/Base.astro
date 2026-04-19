@@ -1,0 +1,37 @@
+---
+import '../styles/global.css';
+import SEOHead from '../components/SEOHead.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  ogImage?: string;
+  ogType?: string;
+  canonicalUrl?: string;
+  structuredData?: object | object[];
+  noindex?: boolean;
+}
+
+const { title, description, ogImage, ogType, canonicalUrl, structuredData, noindex } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <SEOHead
+      title={title}
+      description={description}
+      ogImage={ogImage}
+      ogType={ogType}
+      canonicalUrl={canonicalUrl}
+      structuredData={structuredData}
+      noindex={noindex}
+    />
+  </head>
+  <body class="min-h-screen flex flex-col bg-[#f6efe6] text-[#1a1413]">
+    <Nav />
+    <main class="flex-1"><slot /></main>
+    <Footer />
+  </body>
+</html>

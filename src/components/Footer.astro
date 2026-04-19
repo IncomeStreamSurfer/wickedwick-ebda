@@ -1,0 +1,39 @@
+---
+const year = new Date().getFullYear();
+---
+<footer class="mt-24 border-t border-[#e5d9c5] bg-[#1a1413] text-[#f6efe6]">
+  <div class="max-w-6xl mx-auto px-5 md:px-8 py-14 grid md:grid-cols-4 gap-10">
+    <div class="md:col-span-2">
+      <div class="flex items-center gap-2 font-display text-2xl mb-3">
+        <span aria-hidden="true">🕯️</span> Wicked Wick Co.
+      </div>
+      <p class="text-[#e5d9c5]/80 max-w-sm leading-relaxed">
+        Small-batch, hand-poured soy candles made in our workshop. Every candle is poured by a real human, boxed with care, and made to burn clean for hours.
+      </p>
+    </div>
+    <div>
+      <h3 class="font-display text-sm uppercase tracking-widest text-[#c08457] mb-4">Shop</h3>
+      <ul class="space-y-2 text-sm">
+        <li><a href="/shop" class="hover:text-[#c08457]">All candles</a></li>
+        <li><a href="/shop/amber-vanilla" class="hover:text-[#c08457]">Amber &amp; Vanilla</a></li>
+        <li><a href="/shop/smoky-oud" class="hover:text-[#c08457]">Smoky Oud</a></li>
+        <li><a href="/shop/lavender-honey" class="hover:text-[#c08457]">Lavender &amp; Honey</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="font-display text-sm uppercase tracking-widest text-[#c08457] mb-4">Help</h3>
+      <ul class="space-y-2 text-sm">
+        <li><a href="/shipping-returns" class="hover:text-[#c08457]">Shipping &amp; Returns</a></li>
+        <li><a href="/faq" class="hover:text-[#c08457]">FAQ</a></li>
+        <li><a href="/contact" class="hover:text-[#c08457]">Contact</a></li>
+        <li><a href="/about" class="hover:text-[#c08457]">Our Story</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-[#3a322f]">
+    <div class="max-w-6xl mx-auto px-5 md:px-8 py-6 flex flex-col md:flex-row items-center justify-between text-xs text-[#e5d9c5]/70">
+      <p>© {year} Wicked Wick Co. All rights reserved.</p>
+      <p>Hand-poured with care. Shipped from our small workshop.</p>
+    </div>
+  </div>
+</footer>
